@@ -22,14 +22,25 @@ type User = {
     status: number;
 }
 
-const { data: user, status } = await useFetch<User[]>('http://localhost:8080/api/v1/user')
+const baseUrl = 'http://localhost:8080';
+
+const { data: user } = await useFetch<User[]>(`${baseUrl}/api/v1/user`);
 
 const UCheckBox = resolveComponent('UCheckbox');
 const UBadge = resolveComponent('UBadge');
+const UDropdownMenu = resolveComponent('UDropdownMenu');
 
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({});
+
+//Computed ref
+const hasSelection = computed(() => Object.keys(rowSelection.value).length > 0);
+
+const selectedUsers = computed<User[]>(() => {
+    if (!table.value?.tableApi) return [];
+    return table.value.tableApi.getSelectedRowModel().rows.map(row => row.original);
+});
 
 const columns: TableColumn<User>[] = [
     {
@@ -106,15 +117,38 @@ const columns: TableColumn<User>[] = [
     }
 ]
 
+async function deleteUser(id: number) {
+    try {
+        const { data: request, status } = await useFetch(`${baseUrl}/api/v1/${id}`, {
+            method: 'DELETE',
+        });
+        console.log(request);
+    } catch (error) {
+        console.error('Failed to delete user:', error)
+    }
+
+
+}
+
 function onSelect(row: TableRow<User>, e?: Event) {
     row.toggleSelected(!row.toggleSelected);
     console.log(e);
 }
+
+
+
+
+watch(selectedUsers, (newVal, oldVal) => {
+    console.log('Selected users changed:', newVal);
+});
+
 </script>
 
 <template>
     <div>
+        <USeparator />
         <UTable ref="table" v-model:row-selection="rowSelection" sticky :data="user ?? undefined"
             class="flex-1 max-h-[312px]" :columns="columns" @select="onSelect" />
+        <UButton v-if="hasSelection">Delete User</UButton>
     </div>
 </template>
