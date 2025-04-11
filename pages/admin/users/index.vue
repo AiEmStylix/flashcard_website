@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { TableColumn, TableRow } from '@nuxt/ui';
+import { toast } from '#build/ui';
+import type { DropdownMenuItem, TableColumn, TableRow } from '@nuxt/ui';
 
 enum UserRole {
     User = 1,
@@ -22,6 +23,8 @@ type User = {
     status: number;
 }
 
+const toast = useToast();
+
 const baseUrl = 'http://localhost:8080';
 
 const { data: user } = await useFetch<User[]>(`${baseUrl}/api/v1/user`);
@@ -29,7 +32,7 @@ const { data: user } = await useFetch<User[]>(`${baseUrl}/api/v1/user`);
 const UCheckBox = resolveComponent('UCheckbox');
 const UBadge = resolveComponent('UBadge');
 const UDropdownMenu = resolveComponent('UDropdownMenu');
-
+const UInput = resolveComponent('UInput');
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({});
@@ -68,7 +71,12 @@ const columns: TableColumn<User>[] = [
     {
         accessorKey: 'username',
         header: 'Username',
-        cell: ({ row }) => `${row.getValue('username')}`
+        cell: ({ row }) => h(UInput, {
+            modelValue: row.getValue('username'),
+            'onUpdate:modelValue': (value: string) => {
+                row.original.username = value;
+            }
+        })
     },
     {
         accessorKey: 'email',
@@ -114,31 +122,35 @@ const columns: TableColumn<User>[] = [
             )
         }
 
+    },
+    {
+        id: 'action'
     }
 ]
 
-async function deleteUser(id: number) {
-    try {
-        const { data: request, status } = await useFetch(`${baseUrl}/api/v1/${id}`, {
-            method: 'DELETE',
-        });
-        console.log(request);
-    } catch (error) {
-        console.error('Failed to delete user:', error)
-    }
+
+//Row item for dropdown
+function getDropDownsActions(user: User): DropdownMenuItem[][] {
+    return [
+        [
+            {
+                label: 'Delete',
+                icon: 'i-lucide-trash',
+                color: 'error',
+                onSelect: () => {
+                    toast.add({
+                        title: "Delete user successfully",
+                        color: "success",
+                        icon: 'i-lucide-circle-check'
+                    })
+                }
+            }
+        ]
+    ]
+};
 
 
-}
-
-function onSelect(row: TableRow<User>, e?: Event) {
-    row.toggleSelected(!row.toggleSelected);
-    console.log(e);
-}
-
-
-
-
-watch(selectedUsers, (newVal, oldVal) => {
+watch(selectedUsers, (newVal) => {
     console.log('Selected users changed:', newVal);
 });
 
@@ -146,9 +158,24 @@ watch(selectedUsers, (newVal, oldVal) => {
 
 <template>
     <div>
+        <div v-if="hasSelection" class="m-3 flex gap-1">
+            <UButton color="primary">Save Changes</UButton>
+            <UButton color="error">Delete User</UButton>
+        </div>
+
+        <!-- Input component to filter the table based on username -->
+        <UInput placeholder="Search here..." class="m-2"
+            :model-value="(table?.tableApi.getColumn('username')?.getFilterValue() as string)"
+            @update:model-value="table?.tableApi?.getColumn('username')?.setFilterValue($event)" />
         <USeparator />
         <UTable ref="table" v-model:row-selection="rowSelection" sticky :data="user ?? undefined"
-            class="flex-1 max-h-[312px]" :columns="columns" @select="onSelect" />
-        <UButton v-if="hasSelection">Delete User</UButton>
+            class="flex-1 max-h-[312px]" :columns="columns">
+            <template #action-cell="{ row }">
+                <UDropdownMenu :items="getDropDownsActions(row.original)">
+                    <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" aria-label="Actions" />
+                </UDropdownMenu>
+            </template>
+        </UTable>
+
     </div>
 </template>
