@@ -15,7 +15,7 @@ enum UserStatus {
 }
 
 type User = {
-    id: number;
+    id?: number;
     username: string;
     email: string;
     fullName: string;
@@ -36,6 +36,12 @@ const UInput = resolveComponent('UInput');
 
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({});
+const newUserFormState = reactive({
+    username: '',
+    email: '',
+    fullname: '',
+});
+
 
 //Computed ref
 const hasSelection = computed(() => Object.keys(rowSelection.value).length > 0);
@@ -138,22 +144,53 @@ function getDropDownsActions(user: User): DropdownMenuItem[][] {
                 icon: 'i-lucide-trash',
                 color: 'error',
                 onSelect: () => {
-                    toast.add({
-                        title: "Delete user successfully",
-                        color: "success",
-                        icon: 'i-lucide-circle-check'
-                    })
+                    deleteUser(user.id);
                 }
             }
         ]
     ]
 };
 
+async function deleteUser(userId: number) {
+    try {
+        await $fetch(`${baseUrl}/api/v1/user/${userId}`, {
+            method: 'DELETE'
+        });
+
+        toast.add({
+            title: 'User deleted successfully',
+            color: 'success',
+            icon: 'i-lucide-check-circle'
+        });
+
+        user.value = user.value ? user.value.filter(u => u.id !== userId) : null;
+    } catch (error) {
+        toast.add({
+            title: 'Failed to delete user',
+            color: 'error',
+            icon: 'i-lucide-x-circle'
+        });
+        console.error(error);
+    }
+}
+
+async function addUser(user: User) {
+
+}
+
+function discardModalChanges() {
+    newUserFormState.username = '';
+    newUserFormState.email = '';
+    newUserFormState.fullname = '';
+}
 
 watch(selectedUsers, (newVal) => {
     console.log('Selected users changed:', newVal);
 });
 
+watch(newUserFormState, (newVal) => {
+    console.log("Changed", newVal)
+})
 </script>
 
 <template>
@@ -167,7 +204,28 @@ watch(selectedUsers, (newVal) => {
         <UInput placeholder="Search here..." class="m-2"
             :model-value="(table?.tableApi.getColumn('username')?.getFilterValue() as string)"
             @update:model-value="table?.tableApi?.getColumn('username')?.setFilterValue($event)" />
+
+        <!-- Display dialog to add new user -->
+        <UModal title="Adding new user" :ui="{ footer: 'justify-end gap-1' }">
+            <UButton label="Add new user" variant="soft" />
+            <template #body>
+                <UFormField label="Username">
+                    <UInput v-model="newUserFormState.username" />
+                </UFormField>
+                <UFormField label="Email">
+                    <UInput v-model="newUserFormState.email" />
+                </UFormField>
+                <UFormField label="Fullname">
+                    <UInput v-model="newUserFormState.fullname" />
+                </UFormField>
+            </template>
+            <template #footer>
+                <UButton label="Discard changes" color="error" @click="discardModalChanges()" />
+                <UButton label="Add new user" />
+            </template>
+        </UModal>
         <USeparator />
+
         <UTable ref="table" v-model:row-selection="rowSelection" sticky :data="user ?? undefined"
             class="flex-1 max-h-[312px]" :columns="columns">
             <template #action-cell="{ row }">
