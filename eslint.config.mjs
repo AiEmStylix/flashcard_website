@@ -1,6 +1,21 @@
-// @ts-check
-import withNuxt from './.nuxt/eslint.config.mjs'
+// eslint.config.mjs
+import antfu from '@antfu/eslint-config'
+import { FlatCompat } from '@eslint/eslintrc'
 
-export default withNuxt(
-  // Your custom configs here
+const compat = new FlatCompat()
+
+export default antfu(
+  {
+    ignores: [],
+  },
+
+  // Legacy config
+  ...compat.config({
+    extends: [
+      'eslint:recommended',
+      // Other extends...
+    ],
+  })
+
+  // Other flat configs...
 )

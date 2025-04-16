@@ -1,6 +1,9 @@
+<!-- eslint-disable vue/first-attribute-linebreak -->
+<!-- eslint-disable vue/first-attribute-linebreak -->
 <script setup lang="ts">
 import { toast } from '#build/ui';
-import type { DropdownMenuItem, TableColumn, TableRow } from '@nuxt/ui';
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui';
+import { getPaginationRowModel } from '@tanstack/vue-table'
 
 enum UserRole {
     User = 1,
@@ -8,11 +11,6 @@ enum UserRole {
     Moderator = 3,
 }
 
-enum UserStatus {
-    Active = 1,
-    Inactive = 2,
-    Suspended = 3
-}
 
 type User = {
     id?: number;
@@ -34,13 +32,22 @@ const UBadge = resolveComponent('UBadge');
 const UDropdownMenu = resolveComponent('UDropdownMenu');
 const UInput = resolveComponent('UInput');
 
+const displayPassword = ref(false);
+const editingRowId = ref<number | null>(null);
+const openModal = ref(false);
 const table = useTemplateRef('table');
 const rowSelection = ref<Record<string, boolean>>({});
 const newUserFormState = reactive({
     username: '',
     email: '',
     fullname: '',
+    password: '',
 });
+
+const pagination = ref({
+    pageIndex: 0,
+    pageSize: 6
+})
 
 
 //Computed ref
@@ -112,28 +119,17 @@ const columns: TableColumn<User>[] = [
         }
     },
     {
-        accessorKey: 'status',
-        header: "Status",
-        cell: ({ row }) => {
-            const statusNumber = row.getValue('status') as number;
-            const statusName = UserStatus[statusNumber] as keyof typeof UserStatus;
-
-            const color = {
-                Active: 'success' as const,
-                Inactive: 'neutral' as const,
-                Suspended: "error" as const
-            }[statusName];
-            return h(UBadge, { class: 'capitalize', variant: 'soft', color }, () =>
-                statusName
-            )
-        }
-
-    },
-    {
         id: 'action'
     }
 ]
 
+async function refreshUsers() {
+    user.value = await $fetch(`${baseUrl}/api/v1/user`);
+}
+
+onMounted(async () => {
+    await refreshUsers();
+});
 
 //Row item for dropdown
 function getDropDownsActions(user: User): DropdownMenuItem[][] {
@@ -174,14 +170,55 @@ async function deleteUser(userId: number) {
     }
 }
 
-async function addUser(user: User) {
+async function addUser() {
+    try {
+        const res = await $fetch(`${baseUrl}/api/v1/auth/register`, {
+            method: "POST",
+            body: {
+                username: newUserFormState.username,
+                password: newUserFormState.password,
+                fullname: newUserFormState.fullname,
+                email: newUserFormState.email,
+                role: 1
+            }
+        });
+        if (res) {
+            toast.add({
+                title: "Adding user successfully",
+                color: 'success',
+                icon: 'i-lucide-check-circle'
+            });
+            openModal.value = false;
+        }
 
+    } catch (error: any) {
+        if (error?.statusCode === 400) {
+            toast.add({
+                title: 'User already exists',
+                description: error?.data?.message || 'The username or email is already taken.',
+                color: 'warning',
+                icon: 'i-lucide-alert-circle'
+            });
+        } else {
+            toast.add({
+                title: 'Error adding user',
+                description: 'Something went wrong. Please try again.',
+                color: 'error',
+                icon: 'i-lucide-x-circle'
+            });
+        }
+
+        console.error('Add user error:', error);
+    }
 }
+
 
 function discardModalChanges() {
     newUserFormState.username = '';
     newUserFormState.email = '';
     newUserFormState.fullname = '';
+    newUserFormState.password = '';
+    openModal.value = !openModal.value;
 }
 
 watch(selectedUsers, (newVal) => {
@@ -195,6 +232,42 @@ watch(newUserFormState, (newVal) => {
 
 <template>
     <div>
+        <!-- Display dialog to add new user -->
+        <UModal v-model:open="openModal" title="Adding new user" :ui="{ footer: 'justify-end gap-1' }">
+            <template #body>
+                <div class="grid grid-cols-2 gap-4">
+                    <UFormField label="Username">
+                        <UInput v-model="newUserFormState.username" />
+                    </UFormField>
+
+                    <UFormField label="Email">
+                        <UInput v-model="newUserFormState.email" />
+                    </UFormField>
+
+                    <UFormField label="Fullname">
+                        <UInput v-model="newUserFormState.fullname" />
+                    </UFormField>
+
+                    <UFormField label="Password">
+                        <UInput v-model="newUserFormState.password" :type="displayPassword ? 'text' : 'password'">
+                            <template #trailing>
+                                <UButton color="neutral" variant="link" size="sm"
+                                    :icon="displayPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                                    :aria-label="displayPassword ? 'Hide password' : 'Show password'"
+                                    :aria-pressed="displayPassword" aria-controls="password"
+                                    @click="displayPassword = !displayPassword" />
+                            </template>
+                        </UInput>
+                    </UFormField>
+                </div>
+            </template>
+            <template #footer>
+                <UButton label="Discard changes" color="error" @click="discardModalChanges()" />
+                <UButton label="Add new user" @click="addUser" />
+            </template>
+        </UModal>
+
+
         <div v-if="hasSelection" class="m-3 flex gap-1">
             <UButton color="primary">Save Changes</UButton>
             <UButton color="error">Delete User</UButton>
@@ -204,36 +277,25 @@ watch(newUserFormState, (newVal) => {
         <UInput placeholder="Search here..." class="m-2"
             :model-value="(table?.tableApi.getColumn('username')?.getFilterValue() as string)"
             @update:model-value="table?.tableApi?.getColumn('username')?.setFilterValue($event)" />
-
-        <!-- Display dialog to add new user -->
-        <UModal title="Adding new user" :ui="{ footer: 'justify-end gap-1' }">
-            <UButton label="Add new user" variant="soft" />
-            <template #body>
-                <UFormField label="Username">
-                    <UInput v-model="newUserFormState.username" />
-                </UFormField>
-                <UFormField label="Email">
-                    <UInput v-model="newUserFormState.email" />
-                </UFormField>
-                <UFormField label="Fullname">
-                    <UInput v-model="newUserFormState.fullname" />
-                </UFormField>
-            </template>
-            <template #footer>
-                <UButton label="Discard changes" color="error" @click="discardModalChanges()" />
-                <UButton label="Add new user" />
-            </template>
-        </UModal>
+        <UButton label="Add new user" variant="soft" @click="openModal = !openModal" />
         <USeparator />
-
-        <UTable ref="table" v-model:row-selection="rowSelection" sticky :data="user ?? undefined"
-            class="flex-1 max-h-[312px]" :columns="columns">
+        <!-- Table section -->
+        <UTable ref="table" v-model:row-selection="rowSelection" v-model:pagination="pagination" sticky
+            :data="user ?? undefined" class="flex-1 max-h-[400px]" :columns="columns" :pagination-options="{
+                getPaginationRowModel: getPaginationRowModel()
+            }">
             <template #action-cell="{ row }">
                 <UDropdownMenu :items="getDropDownsActions(row.original)">
                     <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" aria-label="Actions" />
                 </UDropdownMenu>
             </template>
         </UTable>
-
+        <!-- Pagination -->
+        <div class="flex justify-center border-t border-(--ui-border) pt-4">
+            <UPagination :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
+                :items-per-page="table?.tableApi?.getState().pagination.pageSize"
+                :total="table?.tableApi?.getFilteredRowModel().rows.length"
+                @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)" />
+        </div>
     </div>
 </template>
