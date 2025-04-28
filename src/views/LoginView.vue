@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { login } from '@/api/authService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { reactive, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 
+const error = ref('');
+const router = useRouter();
+const isLoading = ref(false);
 
 
 const formState = reactive({
@@ -12,10 +17,22 @@ const formState = reactive({
   password: '',
 });
 
-const submit = () => {
-  toast.success("Login successfully");
-}
 
+const handleLogin = async () => {
+  error.value = '';
+  isLoading.value = true;
+  try {
+    const response = await login(formState.email, formState.password);
+    console.log(response.data);
+    router.push('/admin');
+    toast.success("Login successfully");
+  } catch (err) {
+    error.value = 'Login failed, please check your credentials';
+    console.log(err);
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 watch(formState, (newVal) => {
   console.log(newVal);
@@ -47,7 +64,7 @@ watch(formState, (newVal) => {
             </div>
             <Input id="password" type="password" required v-model="formState.password" />
           </div>
-          <Button type="submit" class="w-full" @click="submit">
+          <Button type="submit" class="w-full" @click="handleLogin">
             Login
           </Button>
           <Button variant="outline" class="w-full">
@@ -61,6 +78,7 @@ watch(formState, (newVal) => {
           </a>
         </div>
       </div>
+      <p v-if="error" class="error">{{ error }}</p>
     </div>
     <div class="hidden bg-muted lg:block">
       <img src="https://picsum.photos/1920/1080" alt="Image" width="1920" height="1080"
