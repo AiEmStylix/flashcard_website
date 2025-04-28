@@ -3,9 +3,12 @@ import { login } from '@/api/authService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { reactive, ref, watch } from 'vue';
+import { useAuthStore } from '@/stores/authStore';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
+
+const auth = useAuthStore();
 
 const error = ref('');
 const router = useRouter();
@@ -18,12 +21,16 @@ const formState = reactive({
 });
 
 
+
 const handleLogin = async () => {
   error.value = '';
   isLoading.value = true;
   try {
     const response = await login(formState.email, formState.password);
-    console.log(response.data);
+    console.log(response);
+
+    //Set accessToken to Pinia store
+    auth.setAccessToken(response.accessToken);
     router.push('/admin');
     toast.success("Login successfully");
   } catch (err) {
@@ -36,6 +43,10 @@ const handleLogin = async () => {
 
 watch(formState, (newVal) => {
   console.log(newVal);
+})
+
+onMounted(() => {
+  auth.loadAccessToken();
 })
 </script>
 <template>
