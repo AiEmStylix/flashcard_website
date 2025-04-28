@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue';
-import UserTable from '@/components/Datatable/UserTable.vue';
+import AdminDashboard from '@/views/AdminDashboard.vue';
 import { useAuthStore } from '@/stores/authStore';
 
 const router = createRouter({
@@ -22,7 +22,7 @@ const router = createRouter({
     {
       path: '/admin',
       name: 'admin',
-      component: UserTable,
+      component: AdminDashboard,
       meta: { requiresAuths: true }
     }
   ],
