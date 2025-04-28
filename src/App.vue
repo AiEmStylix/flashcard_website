@@ -5,6 +5,6 @@ import { Toaster } from '@/components/ui/sonner'
 </script>
 
 <template>
-  <Toaster class="pointer-events-auto" />
+  <Toaster class="pointer-events-auto" position="top-right" />
   <RouterView />
 </template>

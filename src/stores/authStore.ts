@@ -1,4 +1,10 @@
+import { jwtDecode } from "jwt-decode";
 import { defineStore } from "pinia";
+
+interface TokenPayload {
+  email: string,
+  exp: number
+}
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -17,6 +23,17 @@ export const useAuthStore = defineStore('auth', {
       const token = localStorage.getItem('accessToken');
       if (token) {
         this.accessToken = token;
+      }
+    }
+  },
+  getters: {
+    userInfo(state): TokenPayload | null {
+      if (!state.accessToken) return null;
+      try {
+        return jwtDecode<TokenPayload>(state.accessToken);
+      } catch (error) {
+        console.error(error);
+        return null;
       }
     }
   }
