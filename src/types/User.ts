@@ -7,4 +7,8 @@ export interface User {
   role: number;
 }
 
-
+export enum UserRole {
+  User = 1,
+  Admin = 2,
+  Moderator = 3,
+}
