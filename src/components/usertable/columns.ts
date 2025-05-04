@@ -1,6 +1,8 @@
-import type { User } from '@/types/User';
+import { UserRole, type User } from '@/types/User';
 import type { ColumnDef } from '@tanstack/vue-table';
+import Badge from '@/components/ui/badge/Badge.vue';
 import { h } from 'vue';
+
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -39,8 +41,23 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: 'role',
     header: () => h('div', 'Role'),
     cell: ({row}) => {
-      const value = `${row.getValue('role')}`;
-      return h('div', value);
+      const value = row.getValue('role') as UserRole;
+      /*
+        User = 1,
+        Admin = 2,
+        Moderator = 3
+      */
+      const colorPresets: Record<UserRole, string> = {
+        [UserRole.User]: 'bg-red-400',
+        [UserRole.Admin]: 'bg-green-400',
+        [UserRole.Moderator]: 'bg-blue-400',
+      }
+      const userRole = UserRole[value];
+      const colorValue = colorPresets[value];
+
+      return h(Badge, {class: `${colorValue} text-gray-600` }, userRole);
     }
-  }
+  },
 ];
+
+
