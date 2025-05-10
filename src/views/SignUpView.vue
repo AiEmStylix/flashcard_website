@@ -39,7 +39,7 @@ watch(fullName, (newVal: string) => {
 </script>
 
 <template>
-  <div class="w-full h-screen flex items-center justify-center px-4">
+  <div class="w-full h-screen flex items-center justify-center px-4 bg-[url(https://picsum.photos/1920/1080)]">
     <Card class="mx-auto max-w-sm">
       <CardHeader>
         <CardTitle class="text-xl">
