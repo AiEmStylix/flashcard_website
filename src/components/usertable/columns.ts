@@ -37,6 +37,15 @@ export const columns: ColumnDef<User>[] = [
     },
   },
   {
+    id: 'email',
+    accessorKey: 'email',
+    header: () => h('div', 'Email'),
+    cell: ({row}) => {
+      const value = row.getValue('email') as string;
+      return h('div', value);
+    }
+  },
+  {
     id: 'role',
     accessorKey: 'role',
     header: () => h('div', 'Role'),
@@ -58,6 +67,7 @@ export const columns: ColumnDef<User>[] = [
       return h(Badge, {class: `${colorValue} text-gray-600` }, userRole);
     }
   },
+
 ];
 
 

@@ -1,11 +1,41 @@
 <script setup lang="ts">
+import { register } from '@/api/authService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { computed, reactive, ref, watch } from 'vue';
 
 //Icon as component
 import { GitHubIcon } from 'vue3-simple-icons';
+
+const formState = reactive({
+  email: '',
+  password: '',
+  firstName: '',
+  lastName: '',
+});
+
+const fullName = computed<string>(() => {
+  return formState.firstName + ' ' + formState.lastName;
+});
+
+
+//Function
+const handleRegister = async () => {
+  errorMessage.value = '';
+  try {
+    const response = await register(formState.email, formState.password, fullName.value);
+    console.log(response);
+  } catch (error) {
+    console.error("Register error: " + error);
+    errorMessage.value= error;
+  }
+}
+
+watch(fullName, (newVal: string) => {
+  console.log(newVal)
+})
 </script>
 
 <template>
@@ -24,11 +54,11 @@ import { GitHubIcon } from 'vue3-simple-icons';
           <div class="grid grid-cols-2 gap-4">
             <div class="grid gap-2">
               <Label for="first-name">First name</Label>
-              <Input id="first-name" placeholder="Max" required />
+              <Input id="first-name" placeholder="Max" required v-model="formState.firstName"/>
             </div>
             <div class="grid gap-2">
               <Label for="last-name">Last name</Label>
-              <Input id="last-name" placeholder="Robinson" required />
+              <Input id="last-name" placeholder="Robinson" required v-model="formState.lastName"/>
             </div>
           </div>
           <div class="grid gap-2">
