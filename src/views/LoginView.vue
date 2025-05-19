@@ -31,6 +31,8 @@ const formState = reactive({
   password: '',
 });
 
+
+//Function
 const handleLogin = async () => {
   error.value = '';
   isLoading.value = true;
@@ -94,7 +96,7 @@ onMounted(() => {
         </div>
         <div class="mt-4 text-center text-sm">
           Don't have an account?
-          <RouterLink to="/signup">Sign Up</RouterLink>
+          <RouterLink to="/register">Sign Up</RouterLink>
         </div>
         <p v-if="error" class="error text-center text-red-400">{{ error }}</p>
       </div>

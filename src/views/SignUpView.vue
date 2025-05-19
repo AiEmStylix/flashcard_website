@@ -4,37 +4,53 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { computed, reactive, ref, watch } from 'vue';
+import { useAuthStore } from '@/stores/authStore';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 //Icon as component
 import { GitHubIcon } from 'vue3-simple-icons';
 
+const router = useRouter();
+
+//Reactive
 const formState = reactive({
+  username: '',
   email: '',
   password: '',
   firstName: '',
   lastName: '',
 });
 
+const errorMessage = ref('');
+
 const fullName = computed<string>(() => {
   return formState.firstName + ' ' + formState.lastName;
 });
 
+//State management
+const auth = useAuthStore();
 
 //Function
 const handleRegister = async () => {
   errorMessage.value = '';
   try {
-    const response = await register(formState.email, formState.password, fullName.value);
+    const response = await register(formState.username, formState.email, formState.password, fullName.value);
     console.log(response);
-  } catch (error) {
-    console.error("Register error: " + error);
-    errorMessage.value= error;
+    auth.setAccessToken(response.accessToken);
+    router.push('/');
+  } catch (err) {
+    errorMessage.value = 'Register failed, please check your credentials';
+    console.log(err);
   }
 }
 
 watch(fullName, (newVal: string) => {
   console.log(newVal)
+})
+
+onMounted(() => {
+  auth.loadAccessToken();
 })
 </script>
 
@@ -62,19 +78,30 @@ watch(fullName, (newVal: string) => {
             </div>
           </div>
           <div class="grid gap-2">
+            <Label for="username">Username</Label>
+            <Input
+              id="username"
+              type="username"
+              placeholder="example"
+              required
+              v-model="formState.username"
+            />
+          </div>
+          <div class="grid gap-2">
             <Label for="email">Email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="m@example.com"
+              placeholder="test1@example.com"
               required
+              v-model="formState.email"
             />
           </div>
           <div class="grid gap-2">
             <Label for="password">Password</Label>
-            <Input id="password" type="password" />
+            <Input id="password" type="password" v-model="formState.password"/>
           </div>
-          <Button type="submit" class="w-full">
+          <Button type="submit" class="w-full" @click="handleRegister">
             Create an account
           </Button>
           <Button variant="outline" class="w-full">
@@ -86,6 +113,7 @@ watch(fullName, (newVal: string) => {
           Already have an account?
           <RouterLink to="/login" class="font-bold">Login</RouterLink>
         </div>
+        <div class="mt-4 text-center text-sm" v-if="errorMessage">{{ errorMessage }}</div>
       </CardContent>
     </Card>
   </div>

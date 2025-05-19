@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import UserTable from '@/components/usertable/UserTable.vue';
+
+
 </script>
 <template>
-  <h1>This is admin dashboard</h1>
+  <UserTable/>
 </template>
