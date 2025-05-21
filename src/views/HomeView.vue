@@ -6,10 +6,17 @@ import { useRouter } from 'vue-router';
 
 //Import icon
 import { Repeat, NotebookPen, BookOpenCheck, Plus } from 'lucide-vue-next';
+
+//Shadcn Components
 import Card from '@/components/ui/card/Card.vue';
 import CardHeader from '@/components/ui/card/CardHeader.vue';
 import CardTitle from '@/components/ui/card/CardTitle.vue';
 import CardContent from '@/components/ui/card/CardContent.vue';
+import ClickableAvatar from '@/components/clickableAvatar/ClickableAvatar.vue';
+import { me } from '@/api/authService';
+
+import type { UserInfo } from '@/types/Index';
+import { onMounted, ref } from 'vue';
 
 const auth = useAuthStore();
 
@@ -19,9 +26,25 @@ const handleLogout = () => {
   auth.clearAccessToken();
   route.push('/login');
 };
+
+const userInformation = ref<UserInfo | null>(null);
+
+const getUserInfo = async () => {
+  try {
+    const response = await me();
+    userInformation.value = response;
+    console.log(me);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+onMounted(() => {
+  getUserInfo();
+})
 </script>
 <template>
-  <div class="bg-gray-50 text-gray-800 w-screen min-h-screen">
+  <div class="bg-gray-50 text-gray-800 min-h-screen flex flex-col overflow-hidden">
     <!-- Header section -->
     <header class="m-4 flex justify-between">
       <nav class="flex items-center">
@@ -86,10 +109,15 @@ const handleLogout = () => {
               d="M84.4902 6.04409V33.4348H100.453V28.0087H90.5853V6.04409H84.4902Z"
               fill="#110051"
             ></path>
-            </svg>
-          </RouterLink>
+          </svg>
+        </RouterLink>
       </nav>
-      <nav class="flex gap-2 mx-4">
+      <!-- Display avatar -->
+      <nav v-if="auth" class="flex gap-2 mx-4">
+       <ClickableAvatar v-if="userInformation" :user="userInformation"/>
+      </nav>
+      <!-- Login and register button -->
+      <nav v-else class="flex gap-2 mx-4">
         <Button variant="secondary" class="border-1">
           <Plus />
           Create
@@ -107,7 +135,9 @@ const handleLogout = () => {
         </p>
         <div class="mt-6 space-x-4">
           <Button><RouterLink to="/register">Get Started</RouterLink></Button>
-          <Button variant="secondary" class="border-1"><RouterLink to="/login">Login</RouterLink></Button>
+          <Button variant="secondary" class="border-1"
+            ><RouterLink to="/login">Login</RouterLink></Button
+          >
         </div>
       </div>
     </div>
@@ -168,6 +198,36 @@ const handleLogout = () => {
               obcaecati ut suscipit inventore vel itaque?</CardContent
             >
           </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>IELTS Academic</CardTitle>
+            </CardHeader>
+            <CardContent
+              >Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima harum impedit tempora
+              dignissimos quos? Possimus quibusdam cum, officia vero hic quod vitae libero quam
+              obcaecati ut suscipit inventore vel itaque?</CardContent
+            >
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>IELTS Academic</CardTitle>
+            </CardHeader>
+            <CardContent
+              >Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima harum impedit tempora
+              dignissimos quos? Possimus quibusdam cum, officia vero hic quod vitae libero quam
+              obcaecati ut suscipit inventore vel itaque?</CardContent
+            >
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>IELTS Academic</CardTitle>
+            </CardHeader>
+            <CardContent
+              >Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima harum impedit tempora
+              dignissimos quos? Possimus quibusdam cum, officia vero hic quod vitae libero quam
+              obcaecati ut suscipit inventore vel itaque?</CardContent
+            >
+          </Card>
         </div>
         <div class="mt-6 text-center">
           <a href="#" class="text-blue-600 hover:underline">Browse All Decks</a>
@@ -176,8 +236,8 @@ const handleLogout = () => {
     </section>
 
     <!-- Footer -->
-    <footer class="bg-white border-t py-6">
-      <div class="max-w-6xl mx-auto px-4 text-sm text-gray-600 text-center">
+    <footer class="bg-white border-t py-6 justify-end">
+      <div class="max-w-6xl mx-auto px-4 text-sm text-gray-600 text-center flex flex-col justify-end">
         <p>&copy; 2025 Solmare, All rights reserved.</p>
         <div class="mt-2 space-x-4">
           <a href="#" class="hover:underline">About</a>

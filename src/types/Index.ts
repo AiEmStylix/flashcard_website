@@ -12,3 +12,8 @@ export enum UserRole {
   Admin = 2,
   Moderator = 3,
 }
+
+export interface UserInfo {
+  email: string;
+  username: string;
+}

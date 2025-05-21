@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue';
 import { useAuthStore } from '@/stores/authStore';
 import NotFound from '@/views/NotFound.vue';
+import ClickableAvatar from '@/components/clickableAvatar/ClickableAvatar.vue';
 const AdminDashboard = () => import ('@/views/AdminDashboard.vue');
 
 const router = createRouter({
@@ -29,6 +30,16 @@ const router = createRouter({
       component: AdminDashboard,
       meta: { requiresAuths: true }
     },
+    {
+      path: '/test',
+      name: 'test',
+      component: ClickableAvatar
+    },
+    {
+      path: '/logout',
+      name: 'logout',
+      redirect: '/'
+    }
   ],
 })
 

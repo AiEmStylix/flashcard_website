@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { User } from '@/types/User';
+import type { User } from '@/types/Index';
 import { onMounted, ref } from 'vue';
 import DataTable from './DataTable.vue';
 import { columns } from './columns';

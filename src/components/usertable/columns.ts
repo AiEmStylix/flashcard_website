@@ -1,4 +1,4 @@
-import { UserRole, type User } from '@/types/User';
+import { UserRole, type User } from '@/types/Index';
 import type { ColumnDef } from '@tanstack/vue-table';
 import Badge from '@/components/ui/badge/Badge.vue';
 import { h } from 'vue';
