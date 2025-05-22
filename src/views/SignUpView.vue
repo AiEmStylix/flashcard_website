@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/stores/authStore';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 //Icon as component
@@ -24,10 +24,6 @@ const formState = reactive({
 
 const errorMessage = ref('');
 
-const fullName = computed<string>(() => {
-  return formState.firstName + ' ' + formState.lastName;
-});
-
 //State management
 const auth = useAuthStore();
 
@@ -35,7 +31,7 @@ const auth = useAuthStore();
 const handleRegister = async () => {
   errorMessage.value = '';
   try {
-    const response = await register(formState.username, formState.email, formState.password, fullName.value);
+    const response = await register(formState.username, formState.email, formState.password, formState.firstName, formState.lastName);
     console.log(response);
     auth.setAccessToken(response.accessToken);
     router.push('/');
@@ -45,7 +41,7 @@ const handleRegister = async () => {
   }
 }
 
-watch(fullName, (newVal: string) => {
+watch(formState, (newVal) => {
   console.log(newVal)
 })
 

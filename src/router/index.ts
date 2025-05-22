@@ -1,9 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
 import { useAuthStore } from '@/stores/authStore';
 import NotFound from '@/views/NotFound.vue';
 import ClickableAvatar from '@/components/clickableAvatar/ClickableAvatar.vue';
-const AdminDashboard = () => import ('@/views/AdminDashboard.vue');
+const AdminDashboard = () => import('@/views/AdminDashboard.vue');
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,7 +17,7 @@ const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      component: () => import('@/views/SignUpView.vue')
+      component: () => import('@/views/SignUpView.vue'),
     },
     {
       path: '/',
@@ -28,20 +28,36 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: AdminDashboard,
-      meta: { requiresAuths: true }
+      meta: { requiresAuths: true },
     },
     {
       path: '/test',
       name: 'test',
-      component: ClickableAvatar
+      component: ClickableAvatar,
     },
     {
       path: '/logout',
       name: 'logout',
-      redirect: '/'
-    }
+      redirect: '/',
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard-home',
+      component: () => import('@/views/UserDashboard.vue'),
+    },
+    {
+      path: '/dashboard/:sub(.*)',
+      name: 'dashboard',
+      component: () => import('@/views/UserDashboard.vue'),
+      children: [
+        {
+          path: 'settings',
+          component: ClickableAvatar,
+        },
+      ],
+    },
   ],
-})
+});
 
 //Navigation guard
 router.beforeEach((to, from, next) => {
@@ -52,7 +68,7 @@ router.beforeEach((to, from, next) => {
 
   const tokenPayload = authStore.userInfo;
 
-  const isTokenExpired = tokenPayload ? tokenPayload.exp * 1000 < Date.now(): false;
+  const isTokenExpired = tokenPayload ? tokenPayload.exp * 1000 < Date.now() : false;
 
   if (isTokenExpired) {
     authStore.clearAccessToken();
@@ -69,6 +85,6 @@ router.beforeEach((to, from, next) => {
   } else {
     next();
   }
-})
+});
 
-export default router
+export default router;
