@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
-import { Toaster } from '@/components/ui/sonner'
-
 </script>
 
 <template>
-  <Toaster class="pointer-events-auto" position="top-right" />
-  <RouterView />
+  <UApp> <RouterView /></UApp>
 </template>

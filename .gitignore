@@ -40,3 +40,5 @@ coverage
 .env.*
 !.env.example
 
+auto-imports.d.ts
+components.d.ts

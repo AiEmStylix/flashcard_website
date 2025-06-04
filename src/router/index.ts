@@ -1,60 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import LoginView from '../views/LoginView.vue';
 import { useAuthStore } from '@/stores/authStore';
-import NotFound from '@/views/NotFound.vue';
-import ClickableAvatar from '@/components/clickableAvatar/ClickableAvatar.vue';
-const AdminDashboard = () => import('@/views/AdminDashboard.vue');
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginView,
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: () => import('@/views/SignUpView.vue'),
-    },
     {
       path: '/',
-      name: 'home',
-      component: () => import('@/views/HomeView.vue'),
+      name: 'HomePage',
+      component: () => import('@/views/index.vue'),
     },
-    {
-      path: '/admin',
-      name: 'admin',
-      component: AdminDashboard,
-      meta: { requiresAuths: true },
-    },
-    {
-      path: '/test',
-      name: 'test',
-      component: ClickableAvatar,
-    },
-    {
-      path: '/logout',
-      name: 'logout',
-      redirect: '/',
-    },
+    // {
+    //   path: '/login',
+    //   name: 'Login',
+    //   component: () => import('@/views/login.vue'),
+    // },
     {
       path: '/dashboard',
-      name: 'dashboard-home',
-      component: () => import('@/views/UserDashboard.vue'),
-    },
-    {
-      path: '/dashboard/:sub(.*)',
       name: 'dashboard',
-      component: () => import('@/views/UserDashboard.vue'),
-      children: [
-        {
-          path: 'settings',
-          component: ClickableAvatar,
-        },
-      ],
+      component: () => import('@/views/dashboard/index.vue'),
+      children: [{ path: 'inbox', component: () => import('@/views/dashboard/inbox.vue') }],
     },
   ],
 });
